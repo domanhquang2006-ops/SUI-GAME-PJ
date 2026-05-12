@@ -1,0 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-game-sky: #69d7ff;
+  --color-game-violet: #7c3aed;
+  --color-game-gold: #fbbf24;
+  --color-game-leaf: #65a30d;
+  --color-game-wood: #92400e;
+  --font-game: "Inter", system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Rarity Colors */
+  --rarity-common: #94a3b8;
+  --rarity-uncommon: #22c55e;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f97316;
+
+  /* Glass */
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(148, 163, 184, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #11185b;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 8%, rgba(125, 211, 252, 0.45), transparent 22%),
+    radial-gradient(circle at 86% 10%, rgba(251, 191, 36, 0.28), transparent 18%),
+    radial-gradient(circle at 78% 82%, rgba(34, 197, 94, 0.16), transparent 24%),
+    linear-gradient(180deg, #273a90 0%, #171760 46%, #241151 100%);
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+canvas {
+  display: block;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.28);
+  color: #f8fafc;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────── */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── Custom Animations ─────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes soft-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.015); filter: brightness(1.12); }
+}
+
+@keyframes energy-sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+@keyframes cloud-drift-a {
+  0% { transform: translateX(-8%); }
+  100% { transform: translateX(8%); }
+}
+
+@keyframes cloud-drift-b {
+  0% { transform: translateX(8%); }
+  100% { transform: translateX(-8%); }
+}
+
+@keyframes bar-fill {
+  from { width: 0%; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 1.8s ease-in-out infinite;
+}
+
+.animate-energy-sheen {
+  animation: energy-sheen 1.9s ease-in-out infinite;
+}
+
+.animate-bar-fill {
+  animation: bar-fill 0.8s ease-out;
+}
+
+.game-title {
+  text-shadow:
+    0 2px 0 rgba(12, 18, 55, 0.9),
+    0 5px 12px rgba(15, 23, 42, 0.45);
+}
+
+.game-panel {
+  isolation: isolate;
+}
+
+.game-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.18), transparent 22%),
+    radial-gradient(circle at 92% 6%, rgba(251, 191, 36, 0.18), transparent 24%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 36%);
+}
+
+.cloud-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.45;
+  background-repeat: repeat-x;
+  background-size: 420px 120px;
+  filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.12));
+}
+
+.cloud-layer-a {
+  top: 6%;
+  height: 160px;
+  background-image:
+    radial-gradient(circle at 34px 58px, rgba(255,255,255,0.92) 0 28px, transparent 29px),
+    radial-gradient(circle at 78px 44px, rgba(255,255,255,0.86) 0 36px, transparent 37px),
+    radial-gradient(circle at 128px 62px, rgba(255,255,255,0.88) 0 32px, transparent 33px),
+    radial-gradient(circle at 188px 54px, rgba(255,255,255,0.7) 0 26px, transparent 27px);
+  animation: cloud-drift-a 14s ease-in-out infinite alternate;
+}
+
+.cloud-layer-b {
+  top: 24%;
+  height: 130px;
+  opacity: 0.28;
+  background-size: 520px 140px;
+  background-image:
+    radial-gradient(circle at 44px 76px, rgba(255,255,255,0.78) 0 24px, transparent 25px),
+    radial-gradient(circle at 92px 64px, rgba(255,255,255,0.76) 0 34px, transparent 35px),
+    radial-gradient(circle at 144px 80px, rgba(255,255,255,0.72) 0 30px, transparent 31px);
+  animation: cloud-drift-b 18s ease-in-out infinite alternate;
+}
+
+.battlefield-frame canvas {
+  border-radius: 28px;
+}
+
+.game-wallet button,
+.floating-wallet button {
+  width: 100%;
+  min-height: 34px;
+  border-radius: 14px !important;
+  border: 2px solid rgba(255, 255, 255, 0.28) !important;
+  background: linear-gradient(180deg, #fef08a 0%, #fbbf24 50%, #f97316 100%) !important;
+  color: #451a03 !important;
+  font-weight: 900 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  box-shadow: 0 5px 0 rgba(69, 26, 3, 0.45), 0 12px 24px rgba(15, 23, 42, 0.28) !important;
+}
+
+.floating-wallet button {
+  min-width: 64px;
+  padding-inline: 0.75rem !important;
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .sui-artillery-shell {
+    padding: 0.35rem;
+  }
+
+  .battlefield-frame {
+    min-height: 220px;
+  }
+
+  .battlefield-frame canvas {
+    border-radius: 22px;
+  }
+}
+
+/* ─── Glassmorphism ──────────────────────────────────────────────────── */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* ─── Rarity Glow Effects ────────────────────────────────────────────── */
+
+.glow-common { box-shadow: 0 0 20px rgba(148, 163, 184, 0.15), inset 0 0 20px rgba(148, 163, 184, 0.05); }
+.glow-uncommon { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), inset 0 0 20px rgba(34, 197, 94, 0.05); }
+.glow-rare { box-shadow: 0 0 20px rgba(59, 130, 246, 0.25), inset 0 0 20px rgba(59, 130, 246, 0.05); }
+.glow-epic { box-shadow: 0 0 24px rgba(168, 85, 247, 0.3), inset 0 0 20px rgba(168, 85, 247, 0.05); }
+.glow-legendary { box-shadow: 0 0 28px rgba(249, 115, 22, 0.35), inset 0 0 20px rgba(249, 115, 22, 0.08); }
+
+/* ─── Slot Interaction ───────────────────────────────────────────────── */
+
+.slot-item {
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.slot-item:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.slot-item:active {
+  transform: scale(0.97);
+}

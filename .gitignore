@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+build/
+.npm
+
+# Môi trường (CỰC KỲ QUAN TRỌNG)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db
