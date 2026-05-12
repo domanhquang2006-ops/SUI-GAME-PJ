@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useCurrentAccount,
@@ -84,170 +84,67 @@ const RARITY_MAP: Record<
 // UI COMPONENTS
 // ─────────────────────────────────────────────
 
-function InventorySlot({
+function CompactInventorySlot({
   icon,
-  count,
-  rarity = 2,
-  onClick,
-  active = false,
   label,
-}: any) {
+  count,
+  level,
+  rarity = 2,
+  active = false,
+  onClick,
+}: {
+  icon: string;
+  label: string;
+  count?: number;
+  level?: number | string;
+  rarity?: number;
+  active?: boolean;
+  onClick: () => void;
+}) {
   const style = RARITY_MAP[rarity] || RARITY_MAP[2];
 
   return (
     <motion.button
       type="button"
       onClick={onClick}
-      whileHover={{ y: -5, scale: 1.04 }}
+      whileHover={{ y: -4, scale: 1.04 }}
       whileTap={{ scale: 0.94 }}
       className={cx(
-        'group relative aspect-square min-h-[82px] overflow-hidden rounded-[22px] border-[3px] p-2 text-left shadow-[0_9px_0_rgba(8,13,46,0.48),0_18px_34px_rgba(15,23,42,0.32)] transition-all',
+        'group relative h-full min-h-0 w-full overflow-hidden rounded-[20px] border-[3px] p-2 text-center shadow-[0_7px_0_rgba(8,13,46,0.48),0_14px_28px_rgba(15,23,42,0.32)] transition-all',
         'bg-gradient-to-b from-white/24 via-blue-900/48 to-blue-950/86',
         active ? 'border-white ring-4 ring-cyan-200/35' : style.color,
       )}
     >
       <div className="absolute inset-x-2 top-1 h-1/3 rounded-full bg-white/18" />
-      <div className={cx('absolute inset-2 rounded-[18px] opacity-45 blur-xl', style.bg)} />
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-1">
-        <div className={cx('grid h-12 w-12 place-items-center rounded-2xl border-2 bg-gradient-to-b text-sm font-black shadow-inner', style.color, style.bg, style.text)}>
+      <div className={cx('absolute inset-2 rounded-[18px] opacity-45 blur-xl transition-opacity group-hover:opacity-70', style.bg)} />
+
+      <div className="relative z-10 flex h-full min-h-0 flex-col items-center justify-center gap-1">
+        <div className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-2xl border-2 bg-gradient-to-b text-xs font-black shadow-inner sm:h-12 sm:w-12 sm:text-sm', style.color, style.bg, style.text)}>
           {icon}
         </div>
-        {label && <p className="max-w-full truncate text-[10px] font-black uppercase tracking-wide text-cyan-50/80">{label}</p>}
+        <p className="max-w-full truncate text-[10px] font-black uppercase tracking-wide text-cyan-50/88 sm:text-[11px]">
+          {label}
+        </p>
       </div>
 
-      {count > 1 && (
-        <div className="absolute bottom-2 right-2 z-20 rounded-lg border border-white/40 bg-red-500 px-2 py-0.5 text-xs font-black text-white shadow-lg">
+      {count != null && count > 0 && (
+        <div className="absolute right-1.5 top-1.5 z-20 rounded-full border-2 border-white/70 bg-red-500 px-2 py-0.5 text-[10px] font-black text-white shadow-lg">
           x{count}
         </div>
       )}
-      <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden rounded-xl border border-white/20 bg-blue-950/90 px-2 py-1 text-center text-[10px] font-bold text-cyan-50 shadow-xl group-hover:block">
-        {label || style.name}
-      </div>
-    </motion.button>
-  );
-}
-
-function InventoryItemCard({
-  icon,
-  label,
-  subtitle,
-  count,
-  rarity = 2,
-  active = false,
-  onClick,
-  onPrimaryAction,
-  primaryLabel,
-  disabled,
-}: {
-  icon: string;
-  label: string;
-  subtitle?: string;
-  count?: number;
-  rarity?: number;
-  active?: boolean;
-  onClick: () => void;
-  onPrimaryAction?: () => void;
-  primaryLabel?: string;
-  disabled?: boolean;
-}) {
-  const style = RARITY_MAP[rarity] || RARITY_MAP[2];
-
-  return (
-    <motion.article
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onClick();
-        }
-      }}
-      whileHover={{ y: -5, scale: 1.02 }}
-      className={cx(
-        'relative min-h-[150px] cursor-pointer overflow-hidden rounded-[24px] border-[3px] bg-gradient-to-b from-white/24 via-blue-900/48 to-blue-950/86 p-3 shadow-[0_9px_0_rgba(8,13,46,0.48),0_18px_34px_rgba(15,23,42,0.32)]',
-        active ? 'border-white ring-4 ring-cyan-200/35' : style.color,
+      {level != null && (
+        <div className="absolute bottom-1.5 left-1.5 z-20 rounded-full border border-white/50 bg-blue-950/82 px-2 py-0.5 text-[9px] font-black text-cyan-100 shadow-lg">
+          Lv.{level}
+        </div>
       )}
-    >
-      <div className="absolute inset-x-3 top-1 h-10 rounded-full bg-white/18" />
-      <div className={cx('absolute inset-3 rounded-[20px] opacity-35 blur-xl', style.bg)} />
-
-      <div className="relative z-10 flex items-start gap-3">
-        <div className={cx('grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-2 bg-gradient-to-b text-base font-black shadow-inner', style.color, style.bg, style.text)}>
-          {icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-black uppercase text-white">{label}</p>
-          {subtitle && <p className="mt-1 text-[11px] font-bold text-cyan-100/72">{subtitle}</p>}
-          {count != null && (
-            <span className="mt-2 inline-flex rounded-full border border-white/25 bg-red-500 px-2 py-0.5 text-xs font-black text-white">
-              x{count}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="relative z-10 mt-4 grid grid-cols-2 gap-2">
-        <GameButton
-          variant="ghost"
-          className="px-2 py-2 text-[10px]"
-          onClick={(event) => {
-            event.stopPropagation();
-            onClick();
-          }}
-        >
-          Xem chi tiết
-        </GameButton>
-        {onPrimaryAction && primaryLabel && (
-          <GameButton
-            variant="green"
-            disabled={disabled}
-            className="px-2 py-2 text-[10px]"
-            onClick={(event) => {
-              event.stopPropagation();
-              onPrimaryAction();
-            }}
-          >
-            {primaryLabel}
-          </GameButton>
-        )}
-      </div>
-    </motion.article>
+    </motion.button>
   );
 }
 
 function EmptyInventorySlot() {
   return (
-    <div className="grid min-h-[112px] place-items-center rounded-[22px] border-2 border-dashed border-cyan-100/24 bg-blue-950/34 p-3 text-[11px] font-black uppercase tracking-wider text-cyan-100/42 shadow-inner shadow-black/25">
+    <div className="grid h-full min-h-0 place-items-center rounded-[20px] border-2 border-dashed border-cyan-100/24 bg-blue-950/34 p-2 text-[10px] font-black uppercase tracking-wider text-cyan-100/42 shadow-inner shadow-black/25">
       Trống
-    </div>
-  );
-}
-
-function EmptyState({
-  icon,
-  title,
-  desc,
-}: {
-  icon: string;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
-      <div className="grid h-16 w-16 place-items-center rounded-[20px] border-4 border-cyan-100/40 bg-gradient-to-b from-sky-400/40 to-indigo-950/70 text-sm font-black text-white shadow-xl">
-        {icon}
-      </div>
-
-      <div className="max-w-[280px]">
-        <p className="game-title text-xl font-black uppercase text-white">
-          {title}
-        </p>
-
-        <p className="mt-1 text-xs font-bold text-cyan-100/75">
-          {desc}
-        </p>
-      </div>
     </div>
   );
 }
@@ -305,6 +202,218 @@ function EquipmentRail() {
         </div>
       ))}
     </div>
+  );
+}
+
+function ItemTicketModal({
+  selectedItem,
+  chestCount,
+  keyCount,
+  isOpening,
+  isProcessing,
+  onClose,
+  onOpenChest,
+  onSell,
+}: {
+  selectedItem: any;
+  chestCount: number;
+  keyCount: number;
+  isOpening: boolean;
+  isProcessing: boolean;
+  onClose: () => void;
+  onOpenChest: (chestType: ChestOpenType, amount: number) => void;
+  onSell: () => void;
+}) {
+  if (!selectedItem) return null;
+
+  const selectedFields =
+    selectedItem?.data?.content?.fields;
+
+  const selectedRarity =
+    RARITY_MAP[selectedFields?.rarity] ||
+    RARITY_MAP[2];
+
+  const isChest = selectedItem.type === 'chest';
+  const isKey = selectedItem.type === 'key';
+  const title = isChest
+    ? 'Rương chiến lợi phẩm'
+    : isKey
+      ? 'Chìa khóa EPIC'
+      : selectedRarity.name;
+  const rarity = isChest
+    ? RARITY_MAP[3]
+    : isKey
+      ? RARITY_MAP[4]
+      : selectedRarity;
+  const quantity = isChest ? chestCount : isKey ? keyCount : 1;
+
+  return (
+    <motion.div
+      className="modal-scroll fixed inset-0 z-[95] flex items-center justify-center overflow-y-auto bg-blue-950/72 p-3 backdrop-blur-md sm:p-5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.section
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="relative my-auto flex max-h-[calc(100svh-1.5rem)] min-h-[min(680px,calc(100svh-1.5rem))] w-full max-w-[580px] flex-col overflow-hidden rounded-[34px] border-4 border-yellow-100/70 bg-gradient-to-b from-sky-600/96 via-indigo-950/98 to-violet-950/98 p-4 text-white shadow-[0_16px_0_rgba(69,26,3,0.45),0_32px_90px_rgba(15,23,42,0.7)] sm:min-h-0 sm:p-6"
+        initial={{ y: 42, scale: 0.9, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 28, scale: 0.94, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="pointer-events-none absolute inset-x-8 top-2 h-12 rounded-full bg-white/22 blur-[2px]" />
+        <div className="pointer-events-none absolute -left-16 top-16 h-44 w-44 rounded-full bg-cyan-300/25 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 bottom-24 h-52 w-52 rounded-full bg-amber-300/25 blur-3xl" />
+
+        <button
+          type="button"
+          aria-label="Đóng"
+          onClick={onClose}
+          className="absolute right-3 top-3 z-20 grid h-11 w-11 place-items-center rounded-2xl border-2 border-white/30 bg-blue-950/70 text-lg font-black text-white shadow-[0_5px_0_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5"
+        >
+          ×
+        </button>
+
+        <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-1 pb-1 pt-6 text-center no-scrollbar sm:px-3">
+          <div className="mx-auto mb-3 inline-flex rounded-full border-2 border-white/30 bg-blue-950/54 px-4 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100/85">
+            {rarity.name}
+          </div>
+
+          <h3 className="game-title text-3xl font-black uppercase leading-none text-white sm:text-4xl">
+            {title}
+          </h3>
+
+          <div className="relative mx-auto my-5 grid h-40 w-40 place-items-center sm:h-48 sm:w-48">
+            <div className={cx('absolute inset-0 animate-glow-pulse rounded-full opacity-70 blur-2xl', rarity.bg)} />
+            <motion.div
+              animate={{ y: [0, -8, 0], rotate: isChest ? [0, -1.5, 1.5, 0] : [0, 0, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+              className={cx(
+                'relative grid h-32 w-32 place-items-center rounded-[34px] border-4 bg-gradient-to-b text-4xl font-black shadow-[0_12px_0_rgba(8,13,46,0.46),0_24px_44px_rgba(15,23,42,0.36)] sm:h-40 sm:w-40',
+                rarity.color,
+                rarity.bg,
+                rarity.text,
+              )}
+            >
+              {isChest ? (
+                <div className="relative h-20 w-24 sm:h-24 sm:w-28">
+                  <div className="absolute inset-x-1 top-1 h-9 rounded-t-[24px] border-4 border-amber-950/65 bg-gradient-to-b from-yellow-200 to-amber-500" />
+                  <div className="absolute inset-x-0 bottom-0 h-16 rounded-[20px] border-4 border-amber-950/75 bg-gradient-to-b from-orange-400 to-amber-700 shadow-inner" />
+                  <div className="absolute left-1/2 top-1/2 grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl border-[3px] border-amber-950/70 bg-yellow-200 text-base text-amber-950">
+                    R
+                  </div>
+                </div>
+              ) : isKey ? (
+                'K'
+              ) : (
+                selectedRarity.icon
+              )}
+            </motion.div>
+            <div className="absolute bottom-0 right-2 rounded-full border-2 border-white/80 bg-red-500 px-3 py-1 text-sm font-black text-white shadow-lg">
+              x{quantity}
+            </div>
+          </div>
+
+          <p className="mx-auto max-w-sm text-sm font-bold leading-relaxed text-cyan-50/82">
+            {isChest
+              ? 'Một rương chiến lợi phẩm có thể chứa trang bị, vật phẩm hiếm và phần thưởng on-chain cho kho vũ khí.'
+              : isKey
+                ? 'Chìa khóa dùng để kích hoạt rương EPIC khi tính năng tương ứng khả dụng.'
+                : 'Trang bị có thể dùng trong đội hình hoặc rao bán tại chợ giao dịch.'}
+          </p>
+
+          <div className="mt-5 grid gap-3 rounded-[24px] border-2 border-white/16 bg-blue-950/45 p-3 text-left shadow-inner shadow-black/30">
+            {isChest ? (
+              <>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-3 py-2">
+                  <span className="text-xs font-black uppercase text-cyan-100/70">Xem trước phần thưởng</span>
+                  <span className="text-xs font-black text-yellow-200">Trang bị / Vàng / Vật phẩm</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-3 py-2">
+                  <span className="text-xs font-black uppercase text-cyan-100/70">Số rương</span>
+                  <span className="font-mono text-lg font-black text-white">{chestCount}</span>
+                </div>
+              </>
+            ) : isKey ? (
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-3 py-2">
+                <span className="text-xs font-black uppercase text-cyan-100/70">Công dụng</span>
+                <span className="text-xs font-black text-sky-100">Mở rương EPIC</span>
+              </div>
+            ) : (
+              <>
+                <StatBar
+                  label="Sát thương"
+                  value={selectedFields?.damage || 0}
+                  max={1000}
+                  colorClass="bg-gradient-to-r from-orange-300 to-red-500"
+                  icon="ST"
+                />
+                <StatBar
+                  label="Độ bền"
+                  value={selectedFields?.durability || 0}
+                  max={255}
+                  colorClass="bg-gradient-to-r from-lime-300 to-emerald-500"
+                  icon="ĐB"
+                />
+                <p className="text-center font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-100/55">
+                  {shortenId(selectedItem.data?.objectId || '')}
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="mt-auto grid gap-3 pt-5">
+            {isChest ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <GameButton
+                  onClick={() => onOpenChest('normal', 1)}
+                  disabled={isOpening || chestCount < 1}
+                  variant="green"
+                  className="min-h-14 w-full text-sm"
+                >
+                  MỞ 1 RƯƠNG
+                </GameButton>
+                <GameButton
+                  onClick={() => onOpenChest('normal', chestCount)}
+                  disabled={isOpening || chestCount < 2}
+                  variant="gold"
+                  className="min-h-14 w-full text-sm"
+                >
+                  MỞ x{chestCount}
+                </GameButton>
+              </div>
+            ) : isKey ? (
+              <GameButton
+                onClick={onClose}
+                variant="blue"
+                className="min-h-14 w-full text-sm"
+              >
+                ĐÃ HIỂU
+              </GameButton>
+            ) : (
+              <div className="grid gap-2">
+                <div className="rounded-2xl border-2 border-dashed border-cyan-100/24 bg-blue-950/54 px-3 py-2 text-center text-[11px] font-black uppercase tracking-wide text-cyan-100/68">
+                  Chưa có nút trang bị / nâng cấp / tháo ra được kết nối smart contract.
+                </div>
+                <GameButton
+                  onClick={onSell}
+                  disabled={isProcessing}
+                  variant="gold"
+                  className="min-h-14 w-full text-sm"
+                >
+                  BÁN Ở CHỢ
+                </GameButton>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.section>
+    </motion.div>
   );
 }
 
@@ -656,19 +765,13 @@ export function Inventory({
     );
   };
 
-  const selectedFields =
-    selectedItem?.data?.content?.fields;
-
-  const selectedRarity =
-    RARITY_MAP[selectedFields?.rarity] ||
-    RARITY_MAP[2];
-
   // ─────────────────────────────
   // RENDER
   // ─────────────────────────────
 
   return (
-    <GamePanel glow="cyan" className="flex h-full min-h-[520px] flex-col">
+    <>
+    <GamePanel glow="cyan" className="flex min-h-[min(720px,calc(100svh-6rem))] flex-col md:h-full md:min-h-[520px]">
       <div className="relative z-10 border-b-2 border-white/15 bg-blue-950/24 p-5">
         <PanelTitle
           eyebrow="Kho đồ"
@@ -703,57 +806,40 @@ export function Inventory({
         </div>
       </div>
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
-        <div className="grid max-h-[320px] min-h-[190px] auto-rows-max grid-cols-2 gap-3 overflow-y-auto rounded-[24px] border-2 border-white/15 bg-blue-950/38 p-3 shadow-inner shadow-black/30 no-scrollbar sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-3 sm:p-4">
+        <div className="modal-scroll grid max-h-[52svh] min-h-[300px] auto-rows-[96px] grid-cols-3 gap-2 overflow-y-auto rounded-[24px] border-2 border-white/15 bg-blue-950/38 p-3 shadow-inner shadow-black/30 no-scrollbar sm:auto-rows-[104px] sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
           {activeTab === 'chests' ? (
             <>
               {chestIds.length > 0 && (
-                <InventoryItemCard
+                <CompactInventorySlot
                   icon="R"
                   label="Rương"
-                  subtitle="Loại vật phẩm: Rương"
                   count={chestIds.length}
-                  rarity={2}
+                  rarity={3}
                   active={selectedItem?.type === 'chest'}
                   onClick={() =>
                     setSelectedItem({
                       type: 'chest',
                     })
                   }
-                  onPrimaryAction={() => handleOpenChest('normal', 1)}
-                  primaryLabel="Mở rương"
-                  disabled={isOpening || chestIds.length < 1}
                 />
               )}
 
               {keyIds.length > 0 && (
-                <InventoryItemCard
+                <CompactInventorySlot
                   icon="K"
                   label="Chìa khóa"
-                  subtitle="Dùng để mở rương EPIC"
                   count={keyIds.length}
-                  rarity={3}
+                  rarity={4}
                   active={selectedItem?.type === 'key'}
                   onClick={() =>
                     setSelectedItem({
                       type: 'key',
                     })
                   }
-                  onPrimaryAction={() => toast.info('Chọn rương EPIC để dùng chìa khóa.')}
-                  primaryLabel="Dùng"
                 />
               )}
 
-              {chestIds.length === 0 &&
-                keyIds.length === 0 && (
-                  <div className="col-span-full">
-                    <EmptyState
-                      icon="TRỐNG"
-                      title="Kho đang trống"
-                      desc="Phá thành để nhận rương và chìa khóa."
-                    />
-                  </div>
-                )}
               {Array.from({ length: Math.max(0, 6 - Number(chestIds.length > 0) - Number(keyIds.length > 0)) }).map((_, index) => (
                 <EmptyInventorySlot key={`empty-chest-${index}`} />
               ))}
@@ -769,10 +855,11 @@ export function Inventory({
                   RARITY_MAP[2];
 
                 return (
-                  <InventorySlot
+                  <CompactInventorySlot
                     key={w.data?.objectId}
                     icon={rarityStyle.icon}
                     label={rarityStyle.name}
+                    level={fields?.level ?? fields?.lvl}
                     rarity={fields?.rarity}
                     active={selectedItem?.data?.objectId === w.data?.objectId}
                     onClick={() =>
@@ -782,15 +869,6 @@ export function Inventory({
                 );
               })}
 
-              {weapons.length === 0 && (
-                <div className="col-span-full">
-                  <EmptyState
-                    icon="VK"
-                    title="Chưa có trang bị"
-                    desc="Mở rương để nhận vũ khí cho đội hình."
-                  />
-                </div>
-              )}
               {Array.from({ length: Math.max(0, 8 - weapons.length) }).map((_, index) => (
                 <EmptyInventorySlot key={`empty-gear-${index}`} />
               ))}
@@ -798,135 +876,10 @@ export function Inventory({
           )}
         </div>
 
-        <div className="flex min-h-[260px] flex-1 flex-col rounded-[26px] border-2 border-white/18 bg-gradient-to-b from-sky-950/74 to-indigo-950/78 p-4 shadow-inner shadow-black/35">
-          {!selectedItem ? (
-            <div className="m-auto text-center">
-              <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-[24px] border-2 border-dashed border-cyan-100/35 bg-blue-950/50 text-sm font-black text-cyan-100/55">
-                CHỌN
-              </div>
-              <p className="game-title text-xl font-black uppercase text-white">Chọn vật phẩm</p>
-              <p className="mt-2 text-xs font-bold text-cyan-100/60">Chạm vào ô vật phẩm để xem chi tiết.</p>
-            </div>
-          ) : selectedItem.type === 'chest' ? (
-            <div className="flex h-full flex-col">
-              <div className="mx-auto mb-4 grid h-24 w-24 place-items-center rounded-[28px] border-4 border-emerald-100/65 bg-gradient-to-b from-emerald-300 to-teal-600 text-2xl font-black text-emerald-950 shadow-xl">
-                R
-              </div>
-              <h4 className="game-title text-center text-2xl font-black uppercase text-white">
-                Rương
-              </h4>
-              <p className="mx-auto mt-2 max-w-[220px] text-center text-xs font-bold text-cyan-100/70">
-                Loại vật phẩm: Rương. Số lượng hiện có: {chestIds.length}. Mở rương để nhận trang bị và phần thưởng on-chain.
-              </p>
-
-              <div className="mt-auto space-y-3 pt-6">
-                <GameButton
-                  onClick={() =>
-                    handleOpenChest(
-                      'normal',
-                      1
-                    )
-                  }
-                  disabled={isOpening}
-                  variant="green"
-                  className="w-full"
-                >
-                  Mở rương
-                </GameButton>
-
-                <GameButton
-                  onClick={() =>
-                    handleOpenChest(
-                      'normal',
-                      Math.min(
-                        chestIds.length,
-                        10
-                      )
-                    )
-                  }
-                  disabled={
-                    isOpening ||
-                    chestIds.length < 2
-                  }
-                  variant="blue"
-                  className="w-full"
-                >
-                  Mở x{Math.min(chestIds.length, 10)}
-                </GameButton>
-
-                <GameButton
-                  onClick={() =>
-                    handleOpenChest(
-                      'epic',
-                      1
-                    )
-                  }
-                  disabled={
-                    isOpening ||
-                    keyIds.length < 1
-                  }
-                  variant="gold"
-                  className="w-full"
-                >
-                  Mở EPIC
-                </GameButton>
-              </div>
-            </div>
-          ) : selectedItem.type === 'key' ? (
-            <div className="m-auto text-center">
-              <div className="mx-auto mb-4 grid h-24 w-24 place-items-center rounded-[28px] border-4 border-sky-100/65 bg-gradient-to-b from-sky-300 to-indigo-600 text-2xl font-black text-sky-950 shadow-xl">
-                K
-              </div>
-              <h4 className="game-title text-2xl font-black uppercase text-white">
-                Chìa khóa EPIC
-              </h4>
-              <p className="mt-2 text-xs font-bold text-cyan-100/70">
-                Cần có chìa khóa để mở rương EPIC.
-              </p>
-            </div>
-          ) : (
-            <div className="flex h-full flex-col">
-              <div className={cx('mx-auto mb-4 grid h-24 w-24 place-items-center rounded-[28px] border-4 bg-gradient-to-b text-2xl font-black shadow-xl', selectedRarity.color, selectedRarity.bg, selectedRarity.text)}>
-                {selectedRarity.icon}
-              </div>
-
-              <h4 className="game-title text-center text-2xl font-black uppercase text-white">
-                {selectedRarity.name}
-              </h4>
-              <p className="mt-1 text-center font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-100/55">
-                {shortenId(selectedItem.data?.objectId || '')}
-              </p>
-
-              <div className="mt-8 space-y-6">
-                <StatBar
-                  label="Sát thương"
-                  value={selectedFields?.damage || 0}
-                  max={1000}
-                  colorClass="bg-gradient-to-r from-orange-300 to-red-500"
-                  icon="ST"
-                />
-
-                <StatBar
-                  label="Độ bền"
-                  value={selectedFields?.durability || 0}
-                  max={255}
-                  colorClass="bg-gradient-to-r from-lime-300 to-emerald-500"
-                  icon="ĐB"
-                />
-              </div>
-
-              <div className="mt-auto pt-6">
-                <GameButton
-                  onClick={handleSell}
-                  disabled={isProcessing}
-                  variant="gold"
-                  className="w-full"
-                >
-                  Bán ở chợ
-                </GameButton>
-              </div>
-            </div>
-          )}
+        <div className="rounded-[24px] border-2 border-white/14 bg-blue-950/38 px-4 py-3 text-center shadow-inner shadow-black/25">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-100/72">
+            Chạm vào vật phẩm để mở phiếu chi tiết
+          </p>
         </div>
       </div>
 
@@ -941,5 +894,20 @@ export function Inventory({
         </div>
       )}
     </GamePanel>
+    <AnimatePresence>
+      {selectedItem && (
+        <ItemTicketModal
+          selectedItem={selectedItem}
+          chestCount={chestIds.length}
+          keyCount={keyIds.length}
+          isOpening={isOpening}
+          isProcessing={isProcessing}
+          onClose={() => setSelectedItem(null)}
+          onOpenChest={handleOpenChest}
+          onSell={handleSell}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }

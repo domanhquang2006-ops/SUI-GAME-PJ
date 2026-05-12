@@ -2,6 +2,7 @@ import { startTransition, useCallback, useEffect, useRef, useState, type ReactNo
 import { useQueryClient } from '@tanstack/react-query';
 import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
+import { motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
 
 import { createPhaserGame } from './game/config';
@@ -132,7 +133,7 @@ function PanelDrawer({
   const title = activePanel === 'inventory' ? 'Túi đồ' : 'Chợ giao dịch';
 
   return (
-    <div className="fixed inset-0 z-[70] flex justify-end bg-blue-950/55 p-0 backdrop-blur-sm md:p-4">
+    <div className="fixed inset-0 z-[70] flex justify-end overflow-y-auto bg-blue-950/55 p-0 backdrop-blur-sm md:p-4">
       <button
         type="button"
         aria-label="Đóng"
@@ -140,7 +141,7 @@ function PanelDrawer({
         onClick={onClose}
       />
 
-      <section className="relative z-10 flex h-full w-full flex-col overflow-hidden rounded-none border-white/25 bg-blue-950/80 shadow-[0_24px_80px_rgba(15,23,42,0.6)] md:max-w-[760px] md:rounded-[32px] md:border-2 lg:max-w-[560px] xl:max-w-[600px]">
+      <section className="relative z-10 flex min-h-full w-full flex-col overflow-hidden rounded-none border-white/25 bg-blue-950/80 shadow-[0_24px_80px_rgba(15,23,42,0.6)] md:h-full md:min-h-0 md:max-w-[760px] md:rounded-[32px] md:border-2 lg:max-w-[560px] xl:max-w-[600px]">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b-2 border-white/15 bg-blue-950/80 px-4 py-3">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/70">Bảng điều khiển</p>
@@ -151,10 +152,36 @@ function PanelDrawer({
           </GameButton>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 md:p-4">
+        <div className="modal-scroll min-h-0 flex-1 overflow-y-auto p-3 md:p-4">
           {children}
         </div>
       </section>
+    </div>
+  );
+}
+
+function RotateDeviceOverlay() {
+  return (
+    <div className="rotate-device-overlay fixed inset-0 z-[120] items-center justify-center overflow-hidden bg-blue-950/86 p-6 text-center text-white backdrop-blur-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(125,211,252,0.35),transparent_28%),radial-gradient(circle_at_78%_70%,rgba(251,191,36,0.18),transparent_24%)]" />
+      <motion.div
+        initial={{ opacity: 0, y: 18, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="relative z-10 w-full max-w-sm rounded-[32px] border-4 border-cyan-100/35 bg-gradient-to-b from-sky-700/92 via-indigo-950/96 to-violet-950/96 p-6 shadow-[0_14px_0_rgba(15,23,42,0.45),0_28px_70px_rgba(15,23,42,0.65)]"
+      >
+        <div className="mx-auto mb-5 grid h-28 w-28 place-items-center">
+          <div className="rotate-phone-icon relative h-20 w-12 rounded-[18px] border-4 border-cyan-100/80 bg-gradient-to-b from-cyan-300 to-blue-600 shadow-xl shadow-cyan-950/40">
+            <div className="absolute inset-x-2 top-2 h-1.5 rounded-full bg-white/70" />
+            <div className="absolute bottom-2 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-white/75" />
+          </div>
+        </div>
+        <h2 className="game-title text-2xl font-black uppercase text-white">
+          Xoay ngang thiết bị
+        </h2>
+        <p className="mt-3 text-sm font-bold leading-relaxed text-cyan-100/82">
+          Vui lòng xoay ngang thiết bị để chơi game.
+        </p>
+      </motion.div>
     </div>
   );
 }
@@ -564,12 +591,13 @@ function App() {
   return (
     <>
       <Toaster position="top-center" richColors theme="dark" />
+      <RotateDeviceOverlay />
 
-      <main className="sui-artillery-shell relative flex min-h-screen w-full flex-col overflow-hidden bg-[#10144f] p-2 font-sans text-white sm:p-3 md:h-screen md:p-4">
+      <main className="sui-artillery-shell relative flex min-h-screen w-full flex-col overflow-x-hidden overflow-y-auto bg-[#10144f] p-2 font-sans text-white sm:p-3 md:min-h-screen md:p-4 xl:h-screen xl:overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(125,211,252,0.45),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(216,180,254,0.32),transparent_22%),linear-gradient(180deg,#283a90_0%,#15175f_44%,#231052_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(180deg,transparent,rgba(15,23,42,0.48))]" />
 
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-1rem)] w-full max-w-[1920px] flex-1 flex-col gap-3 md:min-h-0">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-1rem)] w-full max-w-[1920px] flex-1 flex-col gap-3 xl:min-h-0">
           <GameHud
             accountAddress={account?.address}
             gold={gold}
