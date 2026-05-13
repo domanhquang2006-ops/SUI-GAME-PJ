@@ -1,4 +1,5 @@
 import type { MatchPayload } from './game/createScene';
+import { API_BASE } from './config/api';
 
 export interface VerifyShotPayload extends MatchPayload {
   playerAddress: string;
@@ -18,7 +19,7 @@ export type VerifyShotFailure = {
 
 export type VerifyShotResponse = VerifyShotSuccess | VerifyShotFailure;
 
-const VERIFY_SHOT_URL = 'http://localhost:3000/api/verify-shot';
+const VERIFY_SHOT_URL = `${API_BASE}/api/verify-shot`;
 
 export async function verifyShot(payload: VerifyShotPayload): Promise<VerifyShotResponse> {
   const response = await fetch(VERIFY_SHOT_URL, {

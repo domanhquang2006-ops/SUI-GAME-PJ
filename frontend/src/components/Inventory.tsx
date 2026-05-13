@@ -24,9 +24,9 @@ import {
 } from '../suiChest';
 import { GameButton, GamePanel, PanelTitle } from './ui/GamePrimitives';
 import { cx } from '../utils/cx';
+import { API_BASE } from '../config/api';
 
 const GAME_POOL_ID = import.meta.env.VITE_GAME_POOL_ID;
-const API_BASE = 'http://localhost:3000';
 
 // ─────────────────────────────────────────────
 // UTILS

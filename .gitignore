@@ -3,6 +3,7 @@ node_modules/
 dist/
 build/
 .npm
+.vercel/
 
 # Môi trường (CỰC KỲ QUAN TRỌNG)
 .env

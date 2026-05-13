@@ -12,8 +12,7 @@ import { GameplayTx } from '../services/gameplayTx';
 import { MarketTx } from '../services/marketTx';
 import { GameButton, GamePanel, PanelTitle } from './ui/GamePrimitives';
 import { cx } from '../utils/cx';
-
-const API_BASE = 'http://localhost:3000';
+import { API_BASE } from '../config/api';
 
 const RARITY_MAP: Record<number, {
   name: string,

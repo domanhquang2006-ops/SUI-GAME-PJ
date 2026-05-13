@@ -15,8 +15,8 @@ import { GameButton } from './components/ui/GamePrimitives';
 import { cx } from './utils/cx';
 import { verifyShot } from './verifyShot';
 import { scheduleChestInventoryRefetch } from './suiChest';
+import { API_BASE } from './config/api';
 
-const API_BASE = 'http://localhost:3000';
 const ADMIN_WALLET = '0x83d77488b060f33d011dc548f358cf72938812b7609a41aa77b028a6ca88c226';
 
 function getExplorerUrl(digest: string) {
