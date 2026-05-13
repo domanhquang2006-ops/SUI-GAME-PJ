@@ -5,6 +5,7 @@ import {
   drawAmmoSelectorIcon, drawSoftCloud, drawDistantIsland, drawFloatingIsland, drawTurnBanner,
   type CastleRefs,
 } from './drawEntities';
+import { API_BASE } from '../config/api';
 
 // ─── TYPES & INTERFACES ─────────────────────────────────────────────────────
 export const GAME_WIDTH = 1024;
@@ -671,7 +672,7 @@ export function createMainScene(options: CreateMainSceneOptions): Phaser.Types.S
           if (false && wallet) {
 
             fetch(
-              'http://localhost:3000/api/use-ammo',
+              `${API_BASE}/api/use-ammo`,
               {
                 method: 'POST',
 

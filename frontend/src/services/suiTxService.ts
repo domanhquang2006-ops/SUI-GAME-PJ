@@ -2,9 +2,7 @@ import {
     Transaction,
 } from '@mysten/sui/transactions';
 
-const API_BASE =
-    (import.meta as any).env?.VITE_API_BASE ||
-    'http://localhost:3000';
+import { API_BASE } from '../config/api';
 
 export type SponsoredTxResponse = {
     success: boolean;

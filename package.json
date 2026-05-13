@@ -1,0 +1,23 @@
+{
+  "name": "sui-artillery-fullstack",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "install:all": "npm install && npm install --prefix frontend"
+  },
+  "dependencies": {
+    "@mysten/bcs": "^2.0.3",
+    "@mysten/sui": "^2.16.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0",
+    "mongoose": "^9.6.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.10"
+  }
+}
