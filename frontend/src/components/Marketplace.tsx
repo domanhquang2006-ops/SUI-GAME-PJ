@@ -457,7 +457,7 @@ export function Marketplace({
               </div>
             ) : listings.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center rounded-[26px] border-2 border-dashed border-cyan-100/25 bg-blue-950/38 text-center">
-                <div className="mb-4 grid h-24 w-24 place-items-center rounded-[28px] border-4 border-amber-100/50 bg-gradient-to-b from-amber-300 to-orange-500 text-xl font-black text-amber-950 shadow-xl">
+                <div className="mb-4 grid h-24 w-24 place-items-center rounded-[28px] border-4 border-amber-100/50 bg-linear-to-b from-amber-300 to-orange-500 text-xl font-black text-amber-950 shadow-xl">
                   CHỢ
                 </div>
                 <p className="game-title text-2xl font-black uppercase text-white">
@@ -483,13 +483,13 @@ export function Marketplace({
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       whileHover={{ y: -6, scale: 1.02 }}
-                      className="group relative flex min-h-[230px] flex-col gap-4 overflow-hidden rounded-[26px] border-2 border-white/18 bg-gradient-to-b from-sky-900/70 via-blue-950/82 to-indigo-950/92 p-4 shadow-[0_10px_0_rgba(15,23,42,0.45),0_20px_42px_rgba(15,23,42,0.32)]"
+                      className="group relative flex min-h-[230px] flex-col gap-4 overflow-hidden rounded-[26px] border-2 border-white/18 bg-linear-to-b from-sky-900/70 via-blue-950/82 to-indigo-950/92 p-4 shadow-[0_10px_0_rgba(15,23,42,0.45),0_20px_42px_rgba(15,23,42,0.32)]"
                     >
                       <div className={cx('absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-35 blur-3xl', rarityStyle.bg)} />
                       <div className="absolute inset-x-4 top-2 h-8 rounded-full bg-white/14" />
 
                       <div className="relative z-10 flex gap-4">
-                        <div className={cx('grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 bg-gradient-to-b text-lg font-black shadow-inner', rarityStyle.color, rarityStyle.bg, rarityStyle.text)}>
+                        <div className={cx('grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 bg-linear-to-b text-lg font-black shadow-inner', rarityStyle.color, rarityStyle.bg, rarityStyle.text)}>
                           {rarityStyle.icon}
                         </div>
 
@@ -568,13 +568,13 @@ export function Marketplace({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="group relative flex min-h-[210px] flex-col gap-4 overflow-hidden rounded-[26px] border-2 border-white/18 bg-gradient-to-b from-violet-800/65 via-blue-950/82 to-indigo-950/92 p-4 shadow-[0_10px_0_rgba(15,23,42,0.45),0_20px_42px_rgba(15,23,42,0.32)]"
+                className="group relative flex min-h-[210px] flex-col gap-4 overflow-hidden rounded-[26px] border-2 border-white/18 bg-linear-to-b from-violet-800/65 via-blue-950/82 to-indigo-950/92 p-4 shadow-[0_10px_0_rgba(15,23,42,0.45),0_20px_42px_rgba(15,23,42,0.32)]"
               >
                 <div className="absolute inset-x-4 top-2 h-8 rounded-full bg-white/14" />
                 <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-fuchsia-300/25 blur-3xl" />
 
                 <div className="relative z-10 flex gap-4">
-                  <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-fuchsia-100/50 bg-gradient-to-b from-fuchsia-300 to-indigo-600 text-lg font-black text-white shadow-inner">
+                  <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-fuchsia-100/50 bg-linear-to-b from-fuchsia-300 to-indigo-600 text-lg font-black text-white shadow-inner">
                     {item.icon}
                   </div>
 

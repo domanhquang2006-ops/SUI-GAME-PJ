@@ -29,7 +29,7 @@ export function GameButton({
       transition={{ type: 'spring', stiffness: 420, damping: 22 }}
       disabled={disabled}
       className={cx(
-        'relative isolate inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 bg-gradient-to-b px-4 py-3 text-xs font-black uppercase tracking-wide',
+        'relative isolate inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 bg-linear-to-b px-4 py-3 text-xs font-black uppercase tracking-wide',
         'shadow-[0_8px_0_rgba(0,0,0,0.22),0_18px_36px_var(--tw-shadow-color)] transition-[filter,opacity,transform] duration-200',
         'before:absolute before:inset-x-2 before:top-1 before:h-1/3 before:rounded-full before:bg-white/35 before:content-[""]',
         'after:absolute after:inset-0 after:-z-10 after:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.45),transparent_42%)] after:content-[""]',
@@ -66,7 +66,7 @@ export function GamePanel({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className={cx(
-        'game-panel relative overflow-hidden rounded-[28px] border-2 border-white/25 bg-gradient-to-b from-sky-200/20 via-indigo-950/84 to-blue-950/92',
+        'game-panel relative overflow-hidden rounded-[28px] border-2 border-white/25 bg-linear-to-b from-sky-200/20 via-indigo-950/84 to-blue-950/92',
         'shadow-[0_18px_0_rgba(32,20,92,0.45),0_26px_60px_var(--tw-shadow-color)]',
         glowClass,
         className,
@@ -120,7 +120,7 @@ export function IconButton({
       whileHover={{ y: -2, scale: 1.06 }}
       whileTap={{ scale: 0.94 }}
       className={cx(
-        'grid h-11 w-11 place-items-center rounded-2xl border-2 border-white/25 bg-gradient-to-b from-white/25 to-sky-950/50 text-sm font-black text-white shadow-[0_6px_0_rgba(0,0,0,0.22)]',
+        'grid h-11 w-11 place-items-center rounded-2xl border-2 border-white/25 bg-linear-to-b from-white/25 to-sky-950/50 text-sm font-black text-white shadow-[0_6px_0_rgba(0,0,0,0.22)]',
         className,
       )}
       {...props}
@@ -156,7 +156,7 @@ export function ResourcePill({
       animate={{ opacity: 1, scale: 1 }}
       className="flex min-w-0 items-center gap-2 rounded-2xl border-2 border-white/25 bg-blue-950/52 p-2 pr-3 shadow-inner shadow-white/10 sm:gap-3 sm:pr-4"
     >
-      <div className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-b text-sm font-black shadow-lg', toneClass)}>
+      <div className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-b text-sm font-black shadow-lg', toneClass)}>
         {icon}
       </div>
       <div className="min-w-0">
@@ -190,7 +190,7 @@ export function EnergyMeter({
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ type: 'spring', stiffness: 110, damping: 18 }}
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300"
+          className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-cyan-300 via-sky-300 to-violet-300"
         />
         <div className="absolute inset-0 animate-energy-sheen bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.42)_42%,transparent_70%)]" />
       </div>
