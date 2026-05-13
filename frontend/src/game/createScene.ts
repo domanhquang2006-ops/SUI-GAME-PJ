@@ -422,33 +422,17 @@ export function createMainScene(options: CreateMainSceneOptions): Phaser.Types.S
 
       // ── LISTEN: AMMO_CHANGED ──
 
-      (data: { type: AmmoType }) => {
-
-        currentAmmo =
-          data.type;
-
-        redrawAmmoIcon();
-      }
-
-
       this.game.events.on(
-        'AMMO_COUNTS_UPDATED',
-        (
-          counts: Record<
-            AmmoType,
-            number
-          >
-        ) => {
-
-          runtimeAmmoCounts = {
-            ...counts,
-          };
+        'AMMO_CHANGED',
+        (data: { type: AmmoType }) => {
+          if (!AMMO_CONFIG[data.type]) return;
+          currentAmmo =
+            data.type;
 
           redrawAmmoIcon();
         }
       );
 
-      // UPDATE COUNTS REALTIME
       this.game.events.on(
         'AMMO_COUNTS_UPDATED',
         (
@@ -470,6 +454,10 @@ export function createMainScene(options: CreateMainSceneOptions): Phaser.Types.S
       this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
         if (roundLocked || p.rightButtonDown()) return;
         if (!(options.onShootAttempt?.() ?? true)) return;
+        if ((runtimeAmmoCounts[currentAmmo] || 0) <= 0) {
+          options.onAmmoRequest?.();
+          return;
+        }
         isDragging = true;
         startX = p.x; startY = p.y;
       });

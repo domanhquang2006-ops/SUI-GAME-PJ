@@ -93,11 +93,9 @@ function HudIcon({
 function FloatingGameHud({
   onOpenInventory,
   onOpenMarket,
-  walletButton,
 }: {
   onOpenInventory: () => void;
   onOpenMarket: () => void;
-  walletButton: ReactNode;
 }) {
   return (
     <>
@@ -111,10 +109,6 @@ function FloatingGameHud({
         <HudIcon label="Cài đặt" glyph="⚙" tone="purple" onClick={() => toast.info('Cài đặt sẽ được bổ sung sau.')} />
       </div>
 
-      <div className="floating-wallet pointer-events-auto absolute bottom-4 right-4 z-40 rounded-2xl border-2 border-white/25 bg-blue-950/68 p-2 shadow-[0_8px_0_rgba(15,23,42,0.38)] backdrop-blur-xl">
-        <p className="mb-1 text-center text-[9px] font-black uppercase tracking-[0.18em] text-cyan-100/70">Ví</p>
-        {walletButton}
-      </div>
     </>
   );
 }
@@ -206,15 +200,17 @@ function App() {
   const [ammoCounts, setAmmoCounts] = useState<Record<AmmoType, number>>({
     WOOD: 0, STONE: 0, IRON: 0, FIRE: 0, ACID: 0, CLUSTER: 0, VOID: 0
   });
-  const [selectedAmmo] = useState<AmmoType>('WOOD');
+  const [selectedAmmo, setSelectedAmmo] = useState<AmmoType>('WOOD');
 
   const energyRef = useRef(energy);
   const accountAddressRef = useRef<string | null>(account?.address ?? null);
   const ammoCountsRef = useRef(ammoCounts);
+  const selectedAmmoRef = useRef<AmmoType>(selectedAmmo);
   const fetchUserStatusRef = useRef<null | (() => Promise<void>)>(null);
   useEffect(() => { energyRef.current = energy; }, [energy]);
   useEffect(() => { accountAddressRef.current = account?.address ?? null; }, [account?.address]);
   useEffect(() => { ammoCountsRef.current = ammoCounts; }, [ammoCounts]);
+  useEffect(() => { selectedAmmoRef.current = selectedAmmo; }, [selectedAmmo]);
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent(
@@ -225,6 +221,27 @@ function App() {
       )
     );
   }, [ammoCounts]);
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('AMMO_CHANGED', {
+        detail: {
+          type: selectedAmmo,
+        },
+      })
+    );
+  }, [selectedAmmo]);
+
+  const handleSelectAmmo = useCallback((type: AmmoType) => {
+    const quantity = ammoCountsRef.current[type] || 0;
+
+    if (quantity <= 0) {
+      toast.error('Không thể trang bị loại đạn đã hết.');
+      return;
+    }
+
+    setSelectedAmmo(type);
+    toast.success('Đã chọn làm đạn hiện tại.');
+  }, []);
 
   // ─── FETCH STATUS ─────────────────────────────────────────────────────────
   const fetchUserStatus = useCallback(async () => {
@@ -409,7 +426,16 @@ function App() {
           });
           return false;
         }
-        // Basic check for ammo (real sync happens in onAmmoConsumed)
+        const currentAmmo = selectedAmmoRef.current;
+
+        if ((ammoCountsRef.current[currentAmmo] || 0) <= 0) {
+          toast.error('Hết đạn', {
+            description: 'Hãy trang bị loại đạn còn số lượng hoặc mua thêm trong chợ.',
+            duration: 3000,
+          });
+          return false;
+        }
+
         return true;
       },
       onAmmoConsumed: async (
@@ -571,16 +597,30 @@ function App() {
         (e as CustomEvent).detail
       );
     };
+    const syncAmmoChanged = (e: Event) => {
+      game.events.emit(
+        'AMMO_CHANGED',
+        (e as CustomEvent).detail
+      );
+    };
 
     window.addEventListener(
       'SYNC_AMMO_COUNTS',
       syncAmmoCounts
+    );
+    window.addEventListener(
+      'AMMO_CHANGED',
+      syncAmmoChanged
     );
 
     return () => {
       window.removeEventListener(
         'SYNC_AMMO_COUNTS',
         syncAmmoCounts
+      );
+      window.removeEventListener(
+        'AMMO_CHANGED',
+        syncAmmoChanged
       );
 
       game.destroy(true);
@@ -604,6 +644,8 @@ function App() {
             energy={energy}
             canClaim={canClaim}
             regenSecondsDisplay={regenSecondsDisplay}
+            selectedAmmo={selectedAmmo}
+            selectedAmmoCount={ammoCounts[selectedAmmo] || 0}
             onClaimDaily={handleClaimDaily}
             onBuyEnergy={handleBuyEnergy}
             connectButton={<ConnectButton connectText="Kết nối ví" />}
@@ -613,7 +655,6 @@ function App() {
             <FloatingGameHud
               onOpenInventory={() => setActivePanel('inventory')}
               onOpenMarket={() => setActivePanel('market')}
-              walletButton={<ConnectButton connectText="Ví" />}
             />
 
             {energy <= 0 && account?.address && !victory && (
@@ -647,7 +688,12 @@ function App() {
 
         <PanelDrawer activePanel={activePanel} onClose={() => setActivePanel(null)}>
           {activePanel === 'inventory' ? (
-            <Inventory onRefreshStatus={fetchUserStatus} />
+            <Inventory
+              ammoCounts={ammoCounts}
+              selectedAmmo={selectedAmmo}
+              onSelectAmmo={handleSelectAmmo}
+              onRefreshStatus={fetchUserStatus}
+            />
           ) : (
             <Marketplace onRefreshStatus={fetchUserStatus} />
           )}

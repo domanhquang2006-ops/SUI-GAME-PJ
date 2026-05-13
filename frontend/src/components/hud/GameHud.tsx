@@ -4,6 +4,16 @@ import { motion } from 'framer-motion';
 import { EnergyMeter, GameButton, IconButton, ResourcePill } from '../ui/GamePrimitives';
 import { cx } from '../../utils/cx';
 
+const AMMO_LABELS: Record<string, { name: string; icon: string }> = {
+  WOOD: { name: 'Đạn gỗ', icon: 'GỖ' },
+  STONE: { name: 'Đạn đá', icon: 'ĐÁ' },
+  IRON: { name: 'Đạn sắt', icon: 'SẮT' },
+  FIRE: { name: 'Đạn lửa', icon: 'LỬA' },
+  ACID: { name: 'Đạn acid', icon: 'AX' },
+  CLUSTER: { name: 'Đạn chùm', icon: 'CH' },
+  VOID: { name: 'Đạn hư không', icon: 'VOID' },
+};
+
 function shortenAddress(value?: string) {
   if (!value) return 'Chưa kết nối';
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
@@ -52,6 +62,8 @@ export function GameHud({
   energy,
   canClaim,
   regenSecondsDisplay,
+  selectedAmmo,
+  selectedAmmoCount,
   onClaimDaily,
   onBuyEnergy,
   connectButton,
@@ -61,11 +73,14 @@ export function GameHud({
   energy: number;
   canClaim: boolean;
   regenSecondsDisplay: number;
+  selectedAmmo: string;
+  selectedAmmoCount: number;
   onClaimDaily: () => void;
   onBuyEnergy: () => void;
   connectButton: ReactNode;
 }) {
   const isConnected = Boolean(accountAddress);
+  const ammo = AMMO_LABELS[selectedAmmo] || { name: selectedAmmo, icon: selectedAmmo };
 
   return (
     <motion.header
@@ -95,11 +110,18 @@ export function GameHud({
           </div>
 
           {isConnected && (
-            <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(150px,auto)_minmax(190px,auto)]">
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(150px,auto)_minmax(190px,auto)_minmax(150px,auto)]">
               <ResourcePill label="Vàng" value={gold.toLocaleString()} tone="gold" icon={<CrownIcon />} />
               <EnergyMeter
                 value={energy}
                 regenLabel={energy < 50 ? `+1 sau ${regenSecondsDisplay}s` : 'Đã đầy năng lượng'}
+              />
+              <ResourcePill
+                label="Đạn hiện tại"
+                value={`x${selectedAmmoCount}`}
+                tone="blue"
+                icon={<span className="text-[10px] leading-none">{ammo.icon}</span>}
+                sublabel={ammo.name}
               />
             </div>
           )}

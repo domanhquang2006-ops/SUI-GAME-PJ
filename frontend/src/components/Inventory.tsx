@@ -25,6 +25,7 @@ import {
 import { GameButton, GamePanel, PanelTitle } from './ui/GamePrimitives';
 import { cx } from '../utils/cx';
 import { API_BASE } from '../config/api';
+import type { AmmoType } from '../game/createScene';
 
 const GAME_POOL_ID = import.meta.env.VITE_GAME_POOL_ID;
 
@@ -80,6 +81,76 @@ const RARITY_MAP: Record<
   },
 };
 
+const AMMO_ITEMS: Record<
+  AmmoType,
+  {
+    name: string;
+    itemType: string;
+    rarity: number;
+    icon: string;
+    description: string;
+  }
+> = {
+  WOOD: {
+    name: 'Đạn gỗ',
+    itemType: 'Đạn / Projectile',
+    rarity: 1,
+    icon: 'GỖ',
+    description: 'Loại đạn cơ bản cho máy bắn đá. Sát thương thấp nhưng ổn định.',
+  },
+  STONE: {
+    name: 'Đạn đá',
+    itemType: 'Đạn / Projectile',
+    rarity: 2,
+    icon: 'ĐÁ',
+    description: 'Đạn đá nặng, gây sát thương tốt và rung tường khi va chạm.',
+  },
+  IRON: {
+    name: 'Đạn sắt',
+    itemType: 'Đạn / Projectile',
+    rarity: 3,
+    icon: 'SẮT',
+    description: 'Đạn sắt xuyên phá mạnh, phù hợp để kết liễu tường thành.',
+  },
+  FIRE: {
+    name: 'Đạn lửa',
+    itemType: 'Đạn / Consumable',
+    rarity: 3,
+    icon: 'LỬA',
+    description: 'Đạn gây cháy, tạo hiệu ứng thiêu đốt theo thời gian.',
+  },
+  ACID: {
+    name: 'Đạn acid',
+    itemType: 'Đạn / Consumable',
+    rarity: 3,
+    icon: 'AX',
+    description: 'Đạn ăn mòn làm mục tiêu dễ nhận thêm sát thương.',
+  },
+  CLUSTER: {
+    name: 'Đạn chùm',
+    itemType: 'Đạn / Projectile',
+    rarity: 4,
+    icon: 'CH',
+    description: 'Đạn tách mảnh trên không để phủ nhiều điểm va chạm.',
+  },
+  VOID: {
+    name: 'Đạn hư không',
+    itemType: 'Đạn / Consumable',
+    rarity: 4,
+    icon: 'VOID',
+    description: 'Đạn hiếm gây hiệu ứng hư không và chặn hồi phục trong thời gian ngắn.',
+  },
+};
+
+type RewardItem = {
+  id?: string;
+  name: string;
+  rarity: number;
+  quantity: number;
+  icon: string;
+  description?: string;
+};
+
 // ─────────────────────────────────────────────
 // UI COMPONENTS
 // ─────────────────────────────────────────────
@@ -127,8 +198,11 @@ function CompactInventorySlot({
         </p>
       </div>
 
-      {count != null && count > 0 && (
-        <div className="absolute right-1.5 top-1.5 z-20 rounded-full border-2 border-white/70 bg-red-500 px-2 py-0.5 text-[10px] font-black text-white shadow-lg">
+      {count != null && (
+        <div className={cx(
+          'absolute right-1.5 top-1.5 z-20 rounded-full border-2 border-white/70 px-2 py-0.5 text-[10px] font-black text-white shadow-lg',
+          count > 0 ? 'bg-red-500' : 'bg-slate-600',
+        )}>
           x{count}
         </div>
       )}
@@ -211,8 +285,10 @@ function ItemTicketModal({
   keyCount,
   isOpening,
   isProcessing,
+  selectedAmmo,
   onClose,
   onOpenChest,
+  onSelectAmmo,
   onSell,
 }: {
   selectedItem: any;
@@ -220,17 +296,22 @@ function ItemTicketModal({
   keyCount: number;
   isOpening: boolean;
   isProcessing: boolean;
+  selectedAmmo: AmmoType;
   onClose: () => void;
   onOpenChest: (chestType: ChestOpenType, amount: number) => void;
+  onSelectAmmo: (ammoType: AmmoType) => void;
   onSell: () => void;
 }) {
   if (!selectedItem) return null;
 
   const selectedFields =
     selectedItem?.data?.content?.fields;
+  const isAmmo = selectedItem.type === 'ammo';
+  const ammoType = selectedItem.ammoType as AmmoType | undefined;
+  const ammoDetails = ammoType ? AMMO_ITEMS[ammoType] : null;
 
   const selectedRarity =
-    RARITY_MAP[selectedFields?.rarity] ||
+    RARITY_MAP[isAmmo ? ammoDetails?.rarity : selectedFields?.rarity] ||
     RARITY_MAP[2];
 
   const isChest = selectedItem.type === 'chest';
@@ -239,13 +320,16 @@ function ItemTicketModal({
     ? 'Rương chiến lợi phẩm'
     : isKey
       ? 'Chìa khóa EPIC'
-      : selectedRarity.name;
+      : isAmmo
+        ? ammoDetails?.name || 'Đạn'
+        : selectedRarity.name;
   const rarity = isChest
     ? RARITY_MAP[3]
     : isKey
       ? RARITY_MAP[4]
       : selectedRarity;
-  const quantity = isChest ? chestCount : isKey ? keyCount : 1;
+  const quantity = isChest ? chestCount : isKey ? keyCount : isAmmo ? selectedItem.quantity || 0 : 1;
+  const isSelectedAmmo = isAmmo && ammoType === selectedAmmo;
 
   return (
     <motion.div
@@ -310,6 +394,8 @@ function ItemTicketModal({
                 </div>
               ) : isKey ? (
                 'K'
+              ) : isAmmo ? (
+                ammoDetails?.icon
               ) : (
                 selectedRarity.icon
               )}
@@ -324,7 +410,9 @@ function ItemTicketModal({
               ? 'Một rương chiến lợi phẩm có thể chứa trang bị, vật phẩm hiếm và phần thưởng on-chain cho kho vũ khí.'
               : isKey
                 ? 'Chìa khóa dùng để kích hoạt rương EPIC khi tính năng tương ứng khả dụng.'
-                : 'Trang bị có thể dùng trong đội hình hoặc rao bán tại chợ giao dịch.'}
+                : isAmmo
+                  ? ammoDetails?.description
+                  : 'Trang bị có thể dùng trong đội hình hoặc rao bán tại chợ giao dịch.'}
           </p>
 
           <div className="mt-5 grid gap-3 rounded-[24px] border-2 border-white/16 bg-blue-950/45 p-3 text-left shadow-inner shadow-black/30">
@@ -344,6 +432,23 @@ function ItemTicketModal({
                 <span className="text-xs font-black uppercase text-cyan-100/70">Công dụng</span>
                 <span className="text-xs font-black text-sky-100">Mở rương EPIC</span>
               </div>
+            ) : isAmmo ? (
+              <>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-3 py-2">
+                  <span className="text-xs font-black uppercase text-cyan-100/70">Loại</span>
+                  <span className="text-xs font-black text-sky-100">{ammoDetails?.itemType || 'Đạn'}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-3 py-2">
+                  <span className="text-xs font-black uppercase text-cyan-100/70">Số lượng</span>
+                  <span className="font-mono text-lg font-black text-white">{quantity}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-3 py-2">
+                  <span className="text-xs font-black uppercase text-cyan-100/70">Trạng thái</span>
+                  <span className={cx('text-xs font-black', isSelectedAmmo ? 'text-lime-200' : 'text-cyan-100')}>
+                    {isSelectedAmmo ? 'Đang trang bị' : 'Có thể chọn cho trận'}
+                  </span>
+                </div>
+              </>
             ) : (
               <>
                 <StatBar
@@ -395,6 +500,25 @@ function ItemTicketModal({
               >
                 ĐÃ HIỂU
               </GameButton>
+            ) : isAmmo && ammoType ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <GameButton
+                  onClick={() => toast.info('Chức năng sử dụng vật phẩm chưa được kết nối.')}
+                  disabled={quantity <= 0}
+                  variant="green"
+                  className="min-h-14 w-full text-sm"
+                >
+                  SỬ DỤNG
+                </GameButton>
+                <GameButton
+                  onClick={() => onSelectAmmo(ammoType)}
+                  disabled={quantity <= 0 || isSelectedAmmo}
+                  variant={isSelectedAmmo ? 'ghost' : 'purple'}
+                  className="min-h-14 w-full text-sm"
+                >
+                  {isSelectedAmmo ? 'ĐANG TRANG BỊ' : 'CHỌN LÀM ĐẠN HIỆN TẠI'}
+                </GameButton>
+              </div>
             ) : (
               <div className="grid gap-2">
                 <div className="rounded-2xl border-2 border-dashed border-cyan-100/24 bg-blue-950/54 px-3 py-2 text-center text-[11px] font-black uppercase tracking-wide text-cyan-100/68">
@@ -417,13 +541,142 @@ function ItemTicketModal({
   );
 }
 
+function extractChestRewards(txResponse: any): RewardItem[] {
+  const events = Array.isArray(txResponse?.events) ? txResponse.events : [];
+
+  return events
+    .filter((event: any) => String(event?.type || '').endsWith('::player::WeaponMinted'))
+    .map((event: any) => {
+      const parsed = event?.parsedJson || {};
+      const rarityNumber = Number(parsed.rarity || 2);
+      const rarity = RARITY_MAP[rarityNumber] || RARITY_MAP[2];
+      const rewardSui = Number(parsed.sui_reward || 0);
+
+      return {
+        id: parsed.weapon_id,
+        name: `Vũ khí ${rarity.name}`,
+        rarity: rarityNumber,
+        quantity: 1,
+        icon: rarity.icon,
+        description: rewardSui > 0 ? `Kèm thưởng ${(rewardSui / 1_000_000_000).toLocaleString('vi-VN')} SUI` : undefined,
+      };
+    })
+    .filter((reward: RewardItem, index: number, list: RewardItem[]) => {
+      if (!reward.id) return true;
+      return list.findIndex((item) => item.id === reward.id) === index;
+    });
+}
+
+function RewardResultModal({
+  rewards,
+  onClose,
+}: {
+  rewards: RewardItem[];
+  onClose: () => void;
+}) {
+  const visibleRewards = rewards.length > 0
+    ? rewards
+    : [{
+      name: 'Đang đồng bộ phần thưởng',
+      rarity: 2,
+      quantity: 0,
+      icon: '...',
+      description: 'Giao dịch đã thành công nhưng sự kiện phần thưởng chưa trả về trong phản hồi hiện tại.',
+    }];
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[105] flex items-center justify-center bg-blue-950/76 p-3 backdrop-blur-md sm:p-5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.section
+        role="dialog"
+        aria-modal="true"
+        aria-label="Nhận vật phẩm"
+        className="relative w-full max-w-[620px] overflow-hidden rounded-[34px] border-4 border-yellow-100/75 bg-gradient-to-b from-sky-600/96 via-indigo-950/98 to-violet-950/98 p-5 text-center text-white shadow-[0_16px_0_rgba(69,26,3,0.45),0_32px_90px_rgba(15,23,42,0.7)] sm:p-7"
+        initial={{ y: 36, scale: 0.9, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 24, scale: 0.94, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="pointer-events-none absolute inset-x-8 top-2 h-12 rounded-full bg-white/24 blur-[2px]" />
+        <div className="pointer-events-none absolute -left-14 top-12 h-48 w-48 animate-glow-pulse rounded-full bg-yellow-300/24 blur-3xl" />
+        <div className="pointer-events-none absolute -right-14 bottom-10 h-52 w-52 animate-glow-pulse rounded-full bg-cyan-300/24 blur-3xl" />
+
+        <div className="relative z-10">
+          <p className="mx-auto mb-2 inline-flex rounded-full border-2 border-yellow-100/60 bg-amber-400/20 px-4 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-yellow-100">
+            Rương đã mở
+          </p>
+          <h3 className="game-title text-3xl font-black uppercase leading-none text-white sm:text-4xl">
+            NHẬN VẬT PHẨM
+          </h3>
+
+          <div className={cx(
+            'mt-6 grid gap-3',
+            visibleRewards.length > 1 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-1',
+          )}>
+            {visibleRewards.map((reward, index) => {
+              const rarity = RARITY_MAP[reward.rarity] || RARITY_MAP[2];
+
+              return (
+                <motion.div
+                  key={reward.id || `${reward.name}-${index}`}
+                  initial={{ y: 18, opacity: 0, scale: 0.92 }}
+                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.08 }}
+                  className="relative overflow-hidden rounded-[24px] border-2 border-white/18 bg-blue-950/48 p-4 shadow-inner shadow-white/10"
+                >
+                  <div className={cx('absolute inset-x-4 top-4 h-20 rounded-full opacity-65 blur-2xl', rarity.bg)} />
+                  <motion.div
+                    animate={{ y: [0, -6, 0], scale: [1, 1.04, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+                    className={cx('relative mx-auto grid h-24 w-24 place-items-center rounded-[28px] border-4 bg-gradient-to-b text-xl font-black shadow-[0_10px_0_rgba(8,13,46,0.4)]', rarity.color, rarity.bg, rarity.text)}
+                  >
+                    {reward.icon}
+                  </motion.div>
+                  <div className="relative mt-3">
+                    <p className={cx('text-sm font-black uppercase', rarity.text)}>{reward.name}</p>
+                    <p className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/70">{rarity.name}</p>
+                    <p className="mt-1 font-mono text-lg font-black text-white">x{reward.quantity}</p>
+                    {reward.description && (
+                      <p className="mt-2 text-xs font-bold text-cyan-50/78">{reward.description}</p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <GameButton
+            onClick={onClose}
+            variant="gold"
+            className="mt-6 min-h-14 w-full text-sm"
+          >
+            XÁC NHẬN
+          </GameButton>
+        </div>
+      </motion.section>
+    </motion.div>
+  );
+}
+
 // ─────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
 
 export function Inventory({
+  ammoCounts,
+  selectedAmmo,
+  onSelectAmmo,
   onRefreshStatus,
 }: {
+  ammoCounts: Record<AmmoType, number>;
+  selectedAmmo: AmmoType;
+  onSelectAmmo: (ammoType: AmmoType) => void;
   onRefreshStatus?: () => void;
 }) {
 
@@ -438,7 +691,7 @@ export function Inventory({
   } = useSignAndExecuteTransaction();
 
   const [activeTab, setActiveTab] =
-    useState<'chests' | 'equipment'>('chests');
+    useState<'chests' | 'ammo' | 'equipment'>('chests');
 
   const [selectedItem, setSelectedItem] =
     useState<any>(null);
@@ -448,6 +701,9 @@ export function Inventory({
 
   const [isProcessing] =
     useState(false);
+
+  const [rewardResult, setRewardResult] =
+    useState<RewardItem[] | null>(null);
 
   // ─────────────────────────────
   // QUERIES
@@ -617,10 +873,16 @@ export function Inventory({
         );
       }
 
-      await client.waitForTransaction({
+      const txResponse = await client.waitForTransaction({
         digest:
           result.digest,
+        options: {
+          showEvents: true,
+          showEffects: true,
+          showObjectChanges: true,
+        },
       });
+      const rewards = extractChestRewards(txResponse);
 
       toast.success(
         chestType === 'epic'
@@ -644,6 +906,8 @@ export function Inventory({
       );
 
       await onRefreshStatus?.();
+      setSelectedItem(null);
+      setRewardResult(rewards);
       return;
 
       // ─────────────────────────────
@@ -777,7 +1041,7 @@ export function Inventory({
           eyebrow="Kho đồ"
           title="Túi đồ"
           right={
-            <div className="grid grid-cols-2 gap-2 rounded-2xl border-2 border-white/15 bg-blue-950/62 p-1.5">
+            <div className="grid grid-cols-3 gap-2 rounded-2xl border-2 border-white/15 bg-blue-950/62 p-1.5">
               <GameButton
                 onClick={() => {
                   setActiveTab('chests');
@@ -787,6 +1051,16 @@ export function Inventory({
                 className="px-4 py-2"
               >
                 Rương
+              </GameButton>
+              <GameButton
+                onClick={() => {
+                  setActiveTab('ammo');
+                  setSelectedItem(null);
+                }}
+                variant={activeTab === 'ammo' ? 'blue' : 'ghost'}
+                className="px-4 py-2"
+              >
+                Đạn
               </GameButton>
               <GameButton
                 onClick={() => {
@@ -842,6 +1116,41 @@ export function Inventory({
 
               {Array.from({ length: Math.max(0, 6 - Number(chestIds.length > 0) - Number(keyIds.length > 0)) }).map((_, index) => (
                 <EmptyInventorySlot key={`empty-chest-${index}`} />
+              ))}
+            </>
+          ) : activeTab === 'ammo' ? (
+            <>
+              {(Object.keys(AMMO_ITEMS) as AmmoType[]).map((type) => {
+                const item = AMMO_ITEMS[type];
+                const quantity = ammoCounts[type] || 0;
+
+                return (
+                  <CompactInventorySlot
+                    key={type}
+                    icon={item.icon}
+                    label={item.name}
+                    count={quantity}
+                    rarity={item.rarity}
+                    active={selectedAmmo === type}
+                    onClick={() =>
+                      setSelectedItem({
+                        type: 'ammo',
+                        ammoType: type,
+                        quantity,
+                        data: {
+                          content: {
+                            fields: {
+                              rarity: item.rarity,
+                            },
+                          },
+                        },
+                      })
+                    }
+                  />
+                );
+              })}
+              {Array.from({ length: Math.max(0, 8 - Object.keys(AMMO_ITEMS).length) }).map((_, index) => (
+                <EmptyInventorySlot key={`empty-ammo-${index}`} />
               ))}
             </>
           ) : (
@@ -902,9 +1211,17 @@ export function Inventory({
           keyCount={keyIds.length}
           isOpening={isOpening}
           isProcessing={isProcessing}
+          selectedAmmo={selectedAmmo}
           onClose={() => setSelectedItem(null)}
           onOpenChest={handleOpenChest}
+          onSelectAmmo={onSelectAmmo}
           onSell={handleSell}
+        />
+      )}
+      {rewardResult && (
+        <RewardResultModal
+          rewards={rewardResult}
+          onClose={() => setRewardResult(null)}
         />
       )}
     </AnimatePresence>
